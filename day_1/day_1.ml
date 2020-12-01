@@ -1,0 +1,1 @@
+let naloga1 vsebina = vsebina |> List.lines |> List.int_list

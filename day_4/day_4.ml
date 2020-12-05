@@ -1,29 +1,90 @@
-let stevilo_dreves seznam zamik dolzina_vrstice= 
-    let rec aux acc d = function
-        |[]-> acc
-        |x::xs -> 
-            if x.[d] = '#' then aux (acc+1) ((d + zamik) mod dolzina_vrstice) xs 
-            else aux (acc) ((d + zamik) mod dolzina_vrstice) xs
+#use "topfind"
+#require "str"
+open Str
+
+(*https://stackoverflow.com/questions/8373460/substring-check-in-ocaml*)
+let contains string vzorec =
+    let re = Str.regexp_string vzorec in
+        try ignore (Str.search_forward re string 0); true
+        with Not_found -> false
+
+let veljaven_id string = 
+    let pogoji = ["byr"; "iyr"; "eyr"; "hgt"; "hcl"; "ecl"; "pid"] in 
+    let rec aux str = function
+        |[] -> true
+        |x::xs -> if contains str x then aux str xs else false
     in
-    aux 0 0 seznam 
+    aux string pogoji
+
+let stevec_veljavnih_id seznam = 
+    let rec aux acc = function
+        |[]-> acc
+        |x::xs -> if veljaven_id x then aux (acc+1) xs else aux acc xs
+    in
+    aux 0 seznam 
 
 let naloga1 vsebina = 
-    let input_list = vsebina |> String.split_on_char '\n'in
-    string_of_int (stevilo_dreves input_list 3 31)
+    let r = Str.regexp "\n\n" in
+    let input_list = vsebina |> Str.split r in
+    string_of_int (stevec_veljavnih_id input_list)
+ 
+let v_pare geslo =  (*geslo je zapisano kot "byr:1937\neyr:2030 pid:154364481\nhgt:158cm iyr:2015 ecl:brn hcl:#c0946f cid:155"*)
+    let p = Str.regexp "[\n \t :]+" in
+    let vnos = Str.split p geslo in
+    let rec v_dvojice = function
+        |[] -> []
+        | x::y::xs -> (x, y) :: v_dvojice xs
+        |_ -> failwith "vrstica ni veljavna" 
+    in
+    v_dvojice vnos 
 
-let rec lihi_elementi_seznama = function (*če začnemo šteti elemente od 1 naprej*)
-    |[] -> []
-    |x::y::xs -> x::(lihi_elementi_seznama xs)
-    |x::[] -> x::[]
+let veljaven_hgt podatek = 
+    let konec = Str.last_chars podatek 2 in
+    match konec with 
+    |"cm" -> let st = int_of_string (Str.first_chars podatek 3) in 
+        if st >= 150 && st <= 193 then true else false
+    |"in" -> let st = int_of_string (Str.first_chars podatek 2) in 
+        if st >= 59 && st <= 76 then true else false
+    |_-> failwith "neveljaven vnos"
+
+let rec veljaven_id_2 = function
+    |[] -> true
+    | x :: xs -> let (pogoj, podatek) = x in
+        match pogoj with
+        |"byr" -> let num = (int_of_string podatek) in 
+            if (num >= 1920 && num <= 2002) then veljaven_id_2 xs else false
+
+        |"iyr" -> let num = (int_of_string podatek) in 
+            if (num >= 2010 && num <= 2020) then veljaven_id_2 xs else false
+
+        |"eyr" -> let num = (int_of_string podatek) in 
+            if (num >= 2020 && num <= 2030) then veljaven_id_2 xs else false
+
+        |"hgt" -> if veljaven_hgt podatek then veljaven_id_2 xs else false
+
+        |"hcl" -> let reghcl = Str.regexp "^#[a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9]$" in 
+            if (Str.string_match reghcl podatek 0) then veljaven_id_2 xs else false
+
+        |"ecl" -> let colors = ["amb"; "blu"; "brn"; "gry"; "grn"; "hzl"; "oth"] in
+            if (List.mem podatek colors) then veljaven_id_2 xs else false
+
+        |"pid" -> let regpid = Str.regexp "^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$" in
+            if (Str.string_match regpid podatek 0) then veljaven_id_2 xs else false
+        
+        |_-> veljaven_id_2 xs
+
+let stevec_veljavnih_id2 seznam = 
+    let rec aux acc = function
+        |[]-> acc
+        |x::xs -> let vnos = v_pare x in
+            if veljaven_id_2 vnos then aux (acc+1) xs else aux acc xs
+    in
+    aux 0 seznam
 
 let naloga2 vsebina = 
-    let input_list = vsebina |> String.split_on_char '\n'in
-    let ena_ena = stevilo_dreves input_list 1 31 in
-    let tri_ena = stevilo_dreves input_list 3 31 in
-    let pet_ena = stevilo_dreves input_list 5 31 in
-    let sedem_ena = stevilo_dreves input_list 7 31 in
-    let ena_dva = stevilo_dreves (lihi_elementi_seznama input_list) 1 31 in
-    string_of_int (ena_ena*tri_ena*pet_ena*sedem_ena*ena_dva)
+    let r = Str.regexp "\n\n" in
+    let input_list = vsebina |> Str.split r in
+    string_of_int (stevec_veljavnih_id input_list)
 
 let _ =
     let preberi_datoteko ime_datoteke =
@@ -37,8 +98,6 @@ let _ =
         close_out chan
     in
     let vsebina_datoteke = preberi_datoteko "day_3/day_3.in" in
-    let odgovor1 = naloga1 vsebina_datoteke in
-    let odgovor2 = naloga2 vsebina_datoteke
+    let odgovor1 = naloga1 vsebina_datoteke
     in
-    izpisi_datoteko "day_3/day_3_1.out" odgovor1;
-    izpisi_datoteko "day_3/day_3_2.out" odgovor2
+    izpisi_datoteko "day_4/day_4_1.out" odgovor1;

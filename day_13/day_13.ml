@@ -25,8 +25,9 @@ let naloga1 vsebina =
     let moji_odhodi = List.map (nasl_od_mojega head) avtobusi |> min_of_list in 
     string_of_int((fst moji_odhodi - head)*(snd moji_odhodi))
 
-let test = "939
-7,13,x,x,59,x,31,19"
+
+
+let test = "7,13,x,x,59,x,31,19"
 
 
 let _ =

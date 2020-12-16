@@ -23,6 +23,7 @@ let n_ti_element n sez =
   in
   krog ((List.length sez) +1) zadnji
  
+let podatki = "6,4,12,1,20,0,16"
 
 let naloga1 vsebina = 
     let input = vsebina |> String.split_on_char ',' |> List.map (int_of_string) in
@@ -33,23 +34,14 @@ let naloga2 vsebina =
     let input = vsebina |> String.split_on_char ',' |> List.map (int_of_string) in
     string_of_int (n_ti_element 30000000 input)  (*mi javi napako int_of_string ma če dam posebi v konzolo pa dela*)
     
-
-let test = "0,3,6"
-
 let _ =
-    let preberi_datoteko ime_datoteke =
-        let chan = open_in ime_datoteke in
-        let vsebina = really_input_string chan (in_channel_length chan) in
-        close_in chan;
-        vsebina
-    and izpisi_datoteko ime_datoteke vsebina =
+    let izpisi_datoteko ime_datoteke vsebina =
         let chan = open_out ime_datoteke in
         output_string chan vsebina;
         close_out chan
     in
-    let vsebina_datoteke = preberi_datoteko "day_15/day_15.in" in
-    let odgovor1 = naloga1 vsebina_datoteke in
-    let odgovor2 = naloga2 vsebina_datoteke
+    let odgovor1 = naloga1 podatki in
+    let odgovor2 = naloga2 podatki
     in
     izpisi_datoteko "day_15/day_15_1.out" odgovor1;
     izpisi_datoteko "day_15/day_15_2.out" odgovor2
